@@ -1,7 +1,8 @@
-using System;
 using UnityEngine;
 using UnityStandardAssets.Characters.ThirdPerson;
 using UnityStandardAssets.CrossPlatformInput;
+using DG.Tweening;
+
 
 
 public enum PlayerState { freeRoam, dialogue, riverMiniGame }
@@ -22,9 +23,22 @@ public class PlayerClass : MonoBehaviour
     public PlayerState currentState;
     InteractableObject currentInteractiveObj;
 
+    SkinnedMeshRenderer playerMesh;
+
     [SerializeField] int score;
 
+    [SerializeField] GameObject immunityShield;
+
+    Spawner spawner;
     Rigidbody rb;
+
+
+    Sequence blinkingSeq;
+    private bool isImmuneToThrash;
+    private float powerUpTimer;
+
+    bool HasPowerUpCollected;
+    [SerializeField] GameObject magnetObj;
     private void Awake()
     {
         playerClass = this;
@@ -47,6 +61,19 @@ public class PlayerClass : MonoBehaviour
 
         // get the third person character ( this should never be null due to require component )
         m_Character = GetComponent<ThirdPersonCharacter>();
+        playerMesh = GetComponentInChildren<SkinnedMeshRenderer>();
+        spawner = FindObjectOfType<Spawner>();
+
+        // InitDotweenSequences();
+    }
+
+    void InitDotweenSequences()
+    {
+        blinkingSeq = DOTween.Sequence();
+        blinkingSeq.Append(playerMesh.material.DOColor(Color.yellow, .25f));
+        blinkingSeq.AppendInterval(.25f);
+        blinkingSeq.Append(playerMesh.material.DOColor(Color.white, .25f));
+        blinkingSeq.SetLoops(-1);
     }
 
 
@@ -63,7 +90,30 @@ public class PlayerClass : MonoBehaviour
                 currentInteractiveObj.Interact();
             }
         }
+        if (HasPowerUpCollected)
+        {
+            powerUpTimer -= Time.deltaTime;
+            UIScript.Instance.PowerUpTimer((int)powerUpTimer);
+        }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            GameManager.instance.ReducePollutionLevel();
+        }
     }
+
+    public void StopPowerUp()
+    {
+        // blinkingSeq.Kill();
+        playerMesh.material.DOColor(Color.white, .25f);
+        immunityShield.SetActive(false);
+        isImmuneToThrash = false;
+        HasPowerUpCollected = false;
+        magnetObj.SetActive(false);
+        UIScript.Instance.ResetPowerUpText();
+    }
+
+
 
 
     // Fixed update is called in sync with physics
@@ -113,33 +163,67 @@ public class PlayerClass : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("dialogue"))
+        if (other.CompareTag("dialogue"))
         {
-            var obj = other.GetComponent<DialogueObject>();
-            UIScript.Instance.AssignDialogue(obj.dialogue);
+            var obj = other.GetComponent<InteractableObject>();
+            // UIScript.Instance.AssignDialogue(obj.dialogue);
             currentInteractiveObj = obj;
         }
 
         if (currentState == PlayerState.riverMiniGame)
         {
-            if (other.gameObject.CompareTag("garbage"))
+            if (other.CompareTag("garbage"))
             {
                 score += 5;
                 other.transform.parent.gameObject.SetActive(false);
                 UIScript.Instance.UpdateScore(score);
+                AudioManager.instance.PlayGarbageAudio();
             }
             if (other.gameObject.CompareTag("star"))
             {
                 score += 50;
                 other.transform.parent.gameObject.SetActive(false);
                 UIScript.Instance.UpdateScore(score);
+                HasPowerUpCollected = true;
+                powerUpTimer = 5.0f;
+
+                int powerUpid = Random.Range(0, 3);
+
+                Invoke(nameof(StopPowerUp), 5f);
+                // 
+
+                AudioManager.instance.PlayPowerUPAudio();
+                switch (powerUpid)
+                {
+                    case 0:         // Faster Movement
+                        UIScript.Instance.powerUpType("Speed Up:");
+                        spawner.SpeedBoost();
+                        break;
+
+                    case 1:         // Immunity 
+                        UIScript.Instance.powerUpType("Immunity:");
+                        isImmuneToThrash = true;
+                        // blinkingSeq.Play();
+                        immunityShield.SetActive(true);
+                        break;
+
+                    case 2:         //Magnet
+                        UIScript.Instance.powerUpType("Magnet:");
+                        magnetObj.SetActive(true);
+                        break;
+                }
             }
-            if (other.gameObject.CompareTag("fish"))
+            if (other.CompareTag("fish"))
             {
-                score -= 10;
+                if (!isImmuneToThrash) score -= 10;
                 other.transform.parent.gameObject.SetActive(false);
                 UIScript.Instance.UpdateScore(score);
+
+                AudioManager.instance.PlayFishAudio();
             }
+
+            // 
+
 
         }
     }
@@ -150,6 +234,8 @@ public class PlayerClass : MonoBehaviour
         {
             currentInteractiveObj = null;
             UIScript.Instance.AssignDialogue(null);
+
+
         }
     }
 }

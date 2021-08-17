@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,36 +13,74 @@ public class GameManager : MonoBehaviour
 
 
     [SerializeField] GameObject riverCam;
+    [SerializeField] GameObject speedBoostCam;
 
-    PlayerClass player;
+    public PlayerClass player;
 
     public bool isPlayingMiniGame;
 
     public float timePlayed;
 
     Vector3 playerPos;
+
+    [ColorUsage(true, true)]
+    [SerializeField]
+    Color nonPolluted, semiPolluted, Polluted;
+
+    [SerializeField] Material material;
+
+    int pollutionLevel = 2;
+
+    bool completedRiverMinigame = false, completedPipeGame = false;
+
     private void Awake()
     {
         instance = this;
         player = FindObjectOfType<PlayerClass>();
+        // StartRiverMiniGame();
     }
     // Start is called before the first frame update
     void Start()
     {
 
     }
-
+    bool col;
     // Update is called once per frame
     void Update()
     {
         if (!isPlayingMiniGame) return;
         timePlayed += Time.deltaTime;
 
-        if (timePlayed > 30)
+        UIScript.Instance.RiverMiniGameTimer(60 - (int)timePlayed);
+
+        if (timePlayed > 60)
         {
             StopRiverMiniGame();
             UIScript.Instance.DisplayScore();
             isPlayingMiniGame = false;
+        }
+
+
+    }
+
+    public void ReducePollutionLevel()
+    {
+        pollutionLevel--;
+
+        if (pollutionLevel == 1)
+            material.DOColor(semiPolluted, "_BaseColor", 1f);
+        else
+            material.DOColor(nonPolluted, "_BaseColor", 1f);
+
+    }
+
+    public void CompletePipeGame()
+    {
+        if (!completedPipeGame)
+        {
+            pollutionLevel--;
+            completedPipeGame = true;
+            ReducePollutionLevel();
         }
     }
 
@@ -51,6 +90,11 @@ public class GameManager : MonoBehaviour
         riverMiniGameObj.SetSpawning(false);
         player.currentState = PlayerState.freeRoam;
         riverCam.SetActive(false);
+        if (!completedRiverMinigame)
+        {
+            completedRiverMinigame = true;
+            ReducePollutionLevel();
+        }
     }
 
     public void StartRiverMiniGame()
@@ -63,5 +107,7 @@ public class GameManager : MonoBehaviour
         timePlayed = 0f;
         isPlayingMiniGame = true;
     }
+
+
 
 }

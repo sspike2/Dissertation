@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +20,18 @@ public class UIScript : MonoBehaviour
 
     [SerializeField] TextMeshProUGUI TimerText;
 
+    [SerializeField] GameObject PipeUIGame;
+    [SerializeField] GameObject PauseMenu;
+    // [SerializeField] GameObject 
+
+    PipeManager pipeManager;
+
+    [SerializeField] TextMeshProUGUI pipeGameResult;
+    [SerializeField] TextMeshProUGUI powerUpTimerText;
+    [SerializeField] TextMeshProUGUI powerUpTypeText;
+
+
+    bool isPaused;
     private void Awake()
     {
         Instance = this;
@@ -28,21 +41,49 @@ public class UIScript : MonoBehaviour
     void Start()
     {
         videUI = DialogueUI.GetComponent<VideUI>();
+        pipeManager = PipeUIGame.GetComponent<PipeManager>();
+        InvokeRepeating(nameof(PowerUpTimerColorSwitch), 1, 1);
+    }
+
+    void PowerUpTimerColorSwitch()
+    {
+        powerUpTimerText.DOColor(new Color32((byte)Random.Range(0, 256), (byte)Random.Range(0, 256), (byte)Random.Range(0, 256), 255), .5f);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (GameManager.instance.isPlayingMiniGame)
+        // ESCAPE 
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            TimerText.text = (int)GameManager.instance.timePlayed + " / 30";
+            // Debug.Log("fgdfggfdgdfkgldfjgh");
         }
     }
 
+    public void PowerUpTimer(int timer)
+    {
+        powerUpTimerText.text = timer + "";
+    }
+
+
+    public void ResetPowerUpText()
+    {
+        powerUpTimerText.text = "";
+        powerUpTypeText.text = "";
+    }
+    public void powerUpType(string type)
+    {
+        powerUpTypeText.text = type;
+    }
+
+    public void RiverMiniGameTimer(int amt)
+    {
+        TimerText.text = amt + "";
+    }
     public void DisplayScore()
     {
         TimerText.text = "";
-        
+
 
     }
 
@@ -62,6 +103,37 @@ public class UIScript : MonoBehaviour
         scoreText.text = "Score: " + score;
     }
 
+    public void StartPipeGame()
+    {
+        PipeUIGame.SetActive(true);
+        pipeManager.CheckLevelCompletion();
 
+    }
+
+    public void ExitPipeGame()
+    {
+        PipeUIGame.SetActive(false);
+    }
+
+    public void StopPipeGame(bool hasWon)
+    {
+        PipeUIGame.SetActive(false);
+        if (hasWon)
+        {
+            pipeGameResult.color = Color.green;
+            pipeGameResult.text = "YOU WIN!!!";
+        }
+        else
+        {
+            pipeGameResult.color = Color.red;
+            pipeGameResult.text = "YOU LOST";
+        }
+        Invoke(nameof(ResetWinText), 3f);
+    }
+
+    void ResetWinText()
+    {
+        pipeGameResult.text = "";
+    }
 
 }

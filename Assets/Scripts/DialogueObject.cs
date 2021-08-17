@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using VIDE_Data;
+using DG.Tweening;
 public class DialogueObject : InteractableObject
 {
 
     public VIDE_Assign dialogue;
+
+
+    GameObject t;
 
     // Start is called before the first frame update
     void Start()
@@ -23,5 +27,6 @@ public class DialogueObject : InteractableObject
     {
         // UIScript.Instance.Converse();
         FindObjectOfType<ThrashTutorialDIrector>().StartTimeLine();
+        // transform.DOMove(t.transform.position, .5f);
     }
 }
