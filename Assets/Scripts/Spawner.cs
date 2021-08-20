@@ -24,41 +24,106 @@ public class Spawner : MonoBehaviour
 
     int lastIndex = 0;
     int nextSpawnAfter = 4;
+
+
+    public struct obstacleStruct
+    {
+        public obstacleStruct(int id, GameObject obj)
+        {
+            obstacleID = id;
+            obstacle = obj;
+        }
+        public int obstacleID { get; }
+        public GameObject obstacle { get; }
+    };
+    List<obstacleStruct> obstaclePool = new List<obstacleStruct>();
+
+    List<obstacleStruct> starPool = new List<obstacleStruct>();
+
+
+
     // Start is called before the first frame update
     void Start()
     {
         // isSpawning = true;
         defaultTimeBetweenSpawns = timeBetweenSpawns;
         defaultSpeed = obstacleSpeed;
+
+
+
+        for (int i = 0; i < 40; i++)
+        {
+            var index = Random.Range(0, obstacle.Length);
+            var obj = Instantiate(obstacle[index], transform.position + new Vector3(0, 0, 500)/*automatically disable it at start*/, Quaternion.identity);
+            obstaclePool.Add(new obstacleStruct(index, obj));
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            var index = Random.Range(0, StarObjs.Length);
+            var obj = Instantiate(StarObjs[index], transform.position + new Vector3(0, 0, 500)/*automatically disable it at start*/, Quaternion.identity);
+            starPool.Add(new obstacleStruct(index, obj));
+        }
     }
 
+    public obstacleStruct GetObjectFromPool(List<obstacleStruct> list)
+    {
+        list.Shuffle();
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (!list[i].obstacle.activeSelf)
+            {
+                return list[i];
+            }
+        }
+        var index = Random.Range(0, StarObjs.Length);
+        var obj = Instantiate(obstacle[index], transform.position, Quaternion.identity);
+        var poolObj = new obstacleStruct(index, obj);
+        list.Add(poolObj);
+        return poolObj;
+
+    }
+
+
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         if (!isSpawning) return;
 
-        spawnDelay += Time.deltaTime;
+        spawnDelay += Time.fixedDeltaTime;
 
 
         if (spawnDelay > timeBetweenSpawns)
         {
             spawnDelay = 0;
-            if (starspawnID > nextSpawnAfter && !isSpeedBoosting)
+            if (!isSpeedBoosting) starspawnID++;
+
+            if (starspawnID > nextSpawnAfter && !isSpeedBoosting) // star
             {
-                var index = Random.Range(0, StarObjs.Length);
+                var obj = GetObjectFromPool(starPool);
+                obj.obstacle.transform.position = transform.position;
+                obj.obstacle.SetActive(true);
 
-                if (lastIndex == index)
-                    Random.Range(0, StarObjs.Length);
-
-                lastIndex = index;
-                Instantiate(StarObjs[lastIndex], transform.position, Quaternion.identity);
-                nextSpawnAfter = Random.Range(4, 8);
+                nextSpawnAfter = Random.Range(6, 8);
                 starspawnID = 0;
             }
-            else
-                Instantiate(obstacle[Random.Range(0, obstacle.Length)], transform.position, Quaternion.identity);
+            else // normal obs
+            {
+                var obj = GetObjectFromPool(obstaclePool);
 
-            if (!isSpeedBoosting) starspawnID++;
+                if (lastIndex == obj.obstacleID)
+                {
+                    obj = GetObjectFromPool(obstaclePool); // get different obj if same as last one
+                }
+
+                lastIndex = obj.obstacleID;
+
+                obj.obstacle.transform.position = transform.position;
+                obj.obstacle.SetActive(true);
+
+            }
+
+
 
         }
     }
@@ -89,4 +154,24 @@ public class Spawner : MonoBehaviour
     }
 
 
+}
+
+
+public static class IListExtensions
+{
+    /// <summary>
+    /// Shuffles the element order of the specified list.
+    /// </summary>
+    public static void Shuffle<T>(this IList<T> ts)
+    {
+        var count = ts.Count;
+        var last = count - 1;
+        for (var i = 0; i < last; ++i)
+        {
+            var r = UnityEngine.Random.Range(i, count);
+            var tmp = ts[i];
+            ts[i] = ts[r];
+            ts[r] = tmp;
+        }
+    }
 }

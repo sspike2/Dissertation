@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using VIDE_Data;
 
@@ -22,7 +23,7 @@ public class UIScript : MonoBehaviour
 
     [SerializeField] GameObject PipeUIGame;
     [SerializeField] GameObject PauseMenu;
-    // [SerializeField] GameObject 
+    [SerializeField] GameObject riverUIGame;
 
     PipeManager pipeManager;
 
@@ -30,6 +31,18 @@ public class UIScript : MonoBehaviour
     [SerializeField] TextMeshProUGUI powerUpTimerText;
     [SerializeField] TextMeshProUGUI powerUpTypeText;
 
+    [SerializeField] Image riverGameCompelted;
+
+
+    [SerializeField] TextMeshProUGUI riverHighscore, riverscore;
+    [SerializeField] GameObject newHighScoreText;
+    [SerializeField] Image powerUpIcon;
+
+
+    [SerializeField] Image powerUpCountDown1, powerUpCountDown2;
+    [SerializeField] Sprite magnetIcon, speedIcon, shieldIcon;
+
+    [SerializeField] Slider bgmSlider, sfxSlider;
 
     bool isPaused;
     private void Awake()
@@ -57,23 +70,76 @@ public class UIScript : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             // Debug.Log("fgdfggfdgdfkgldfjgh");
+
+            Pause();
         }
     }
 
-    public void PowerUpTimer(int timer)
+    public void Pause()
     {
-        powerUpTimerText.text = timer + "";
+        if (isPaused)
+        {
+            Time.timeScale = 1;
+            isPaused = false;
+            PauseMenu.SetActive(false);
+        }
+        else
+        {
+            Time.timeScale = 0;
+            isPaused = true;
+            PauseMenu.SetActive(true);
+        }
+    }
+
+    public void ToggleMusic(float val)
+    {
+        bgmSlider.value = val;
+        AudioManager.instance.MusicVolume(val);
+    }
+    public void ToggleSound(float val)
+    {
+        sfxSlider.value = val;
+        AudioManager.instance.SoundVolume(val);
+    }
+
+    public void PowerUpTimer(float timer)
+    {
+        powerUpCountDown1.fillAmount = timer / 5.0f;
+        powerUpCountDown2.fillAmount = timer / 5.0f;
+    }
+
+    public void MainMenu()
+    {
+
+        Time.timeScale = 1;
+        SceneManager.LoadSceneAsync(0);
     }
 
 
     public void ResetPowerUpText()
     {
-        powerUpTimerText.text = "";
-        powerUpTypeText.text = "";
+        // powerUpTimerText.text = "";
+        // powerUpTypeText.text = "";
+        powerUpCountDown1.gameObject.SetActive(false);
     }
-    public void powerUpType(string type)
+    public void powerUpType(int type)
     {
-        powerUpTypeText.text = type;
+        powerUpCountDown1.gameObject.SetActive(true);
+        powerUpCountDown1.fillAmount = 1.0f;
+        powerUpCountDown2.fillAmount = 1.0f;
+
+        if (type == 0) // speed
+        {
+            powerUpIcon.sprite = speedIcon;
+        }
+        else if (type == 1) // immunity
+        {
+            powerUpIcon.sprite = shieldIcon;
+        }//magnet
+        else
+        {
+            powerUpIcon.sprite = magnetIcon;
+        }
     }
 
     public void RiverMiniGameTimer(int amt)
@@ -97,17 +163,54 @@ public class UIScript : MonoBehaviour
     {
         currentDialogue = dialogue;
     }
+    public void HideScore()
+    {
+        scoreText.text = "";
+    }
 
     public void UpdateScore(int score)
     {
         scoreText.text = "Score: " + score;
     }
 
+    public void SetRiverScore(int score, int highscore, bool newHighScore)
+    {
+        riverscore.text = "Score: " + score;
+        riverHighscore.text = "Highscore: " + highscore;
+
+        if (newHighScore) newHighScoreText.SetActive(true);
+    }
+
+    public void RiverGamePlay()
+    {
+        ExitRiverGame();
+        GameManager.instance.StartRiverMiniGame();
+    }
+
+    public void RiverHowToPlay()
+    {
+        ExitRiverGame();
+        FindObjectOfType<ThrashTutorialDIrector>().StartTimeLine();
+    }
+
     public void StartPipeGame()
     {
         PipeUIGame.SetActive(true);
         pipeManager.CheckLevelCompletion();
+    }
 
+
+    public void OpenRiverGame()
+    {
+
+        riverGameCompelted.enabled = GameManager.instance.completedRiverMinigame;
+        riverUIGame.SetActive(true);
+    }
+
+    public void ExitRiverGame()
+    {
+        newHighScoreText.SetActive(false);
+        riverUIGame.SetActive(false);
     }
 
     public void ExitPipeGame()

@@ -18,17 +18,15 @@ public class ThrashTutorialDIrector : DirectorManager
 
     public override void Played(PlayableDirector obj)
     {
-
         cutScene.SetActive(true);
         base.Played(obj);
-
     }
 
     public override void Stopped(PlayableDirector obj)
     {
         cutScene.SetActive(false);
         base.Stopped(obj);
-        GameManager.instance.StartRiverMiniGame();
+        UIScript.Instance.OpenRiverGame();
     }
 
     public override void StartTimeLine()

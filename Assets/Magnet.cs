@@ -14,7 +14,7 @@ public class Magnet : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-  
+
     }
 
     private void OnTriggerEnter(Collider other)
@@ -23,7 +23,9 @@ public class Magnet : MonoBehaviour
         {
             // bags.Add(other.transform);
             // other.transform.parent = null;
-            other.transform.parent.DOMove(GameManager.instance.player.transform.position, .25f);
+            var obj = Instantiate(other.transform.parent.gameObject, other.transform.parent.position, Quaternion.identity);
+            other.transform.parent.gameObject.SetActive(false);            
+            obj.transform.DOMove(GameManager.instance.player.transform.position, .25f);
         }
     }
 }
