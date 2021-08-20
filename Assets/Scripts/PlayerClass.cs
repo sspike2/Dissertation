@@ -93,7 +93,7 @@ public class PlayerClass : MonoBehaviour
         if (HasPowerUpCollected)
         {
             powerUpTimer -= Time.deltaTime;
-            UIScript.Instance.PowerUpTimer((int)powerUpTimer);
+            UIScript.Instance.PowerUpTimer(powerUpTimer);
         }
 
         if (Input.GetKeyDown(KeyCode.T))
@@ -196,19 +196,19 @@ public class PlayerClass : MonoBehaviour
                 switch (powerUpid)
                 {
                     case 0:         // Faster Movement
-                        UIScript.Instance.powerUpType("Speed Up:");
+                        UIScript.Instance.powerUpType(0);
                         spawner.SpeedBoost();
                         break;
 
                     case 1:         // Immunity 
-                        UIScript.Instance.powerUpType("Immunity:");
+                        UIScript.Instance.powerUpType(1);
                         isImmuneToThrash = true;
                         // blinkingSeq.Play();
                         immunityShield.SetActive(true);
                         break;
 
                     case 2:         //Magnet
-                        UIScript.Instance.powerUpType("Magnet:");
+                        UIScript.Instance.powerUpType(2);
                         magnetObj.SetActive(true);
                         break;
                 }

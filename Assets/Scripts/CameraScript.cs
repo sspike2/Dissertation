@@ -4,21 +4,21 @@ using UnityEngine;
 using Cinemachine;
 public class CameraScript : MonoBehaviour
 {
-
-    CinemachineVirtualCamera mainCamera;
-
-    Transform rotateTarget;
+    CinemachineBrain brain;
     // Start is called before the first frame update
     void Start()
     {
-        mainCamera = GetComponent<CinemachineVirtualCamera>();
-
-        rotateTarget = mainCamera.m_Follow;
+        brain = GetComponent<CinemachineBrain>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
+    }
+
+    public void SetBlendTime(float t)
+    {
+        brain.m_DefaultBlend.m_Time = t;
     }
 }

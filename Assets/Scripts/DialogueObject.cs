@@ -25,8 +25,8 @@ public class DialogueObject : InteractableObject
 
     public override void Interact()
     {
-        // UIScript.Instance.Converse();
-        FindObjectOfType<ThrashTutorialDIrector>().StartTimeLine();
+        // UIScript.Instance.Converse();        
         // transform.DOMove(t.transform.position, .5f);
+        UIScript.Instance.OpenRiverGame();
     }
 }

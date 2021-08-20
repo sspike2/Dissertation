@@ -24,20 +24,44 @@ public class Spawner : MonoBehaviour
 
     int lastIndex = 0;
     int nextSpawnAfter = 4;
+
+
+    public struct obstacleStruct
+    {
+        public obstacleStruct(int iD, GameObject obj)
+        {
+            id = iD;
+            obstacle = obj;
+        }
+        public int id { get; }
+        public GameObject obstacle { get; }
+    };
+    List<obstacleStruct> obj = new List<obstacleStruct>();
+
+
+
     // Start is called before the first frame update
     void Start()
     {
         // isSpawning = true;
         defaultTimeBetweenSpawns = timeBetweenSpawns;
         defaultSpeed = obstacleSpeed;
+
+        for (int i = 0; i < 40; i++)
+        {
+            var index = Random.Range(0, StarObjs.Length);
+            obj.Add(new obstacleStruct(index, Instantiate(obstacle[index], transform.position, Quaternion.identity)));
+        }
+
+
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         if (!isSpawning) return;
 
-        spawnDelay += Time.deltaTime;
+        spawnDelay += Time.fixedDeltaTime;
 
 
         if (spawnDelay > timeBetweenSpawns)
@@ -48,7 +72,13 @@ public class Spawner : MonoBehaviour
                 var index = Random.Range(0, StarObjs.Length);
 
                 if (lastIndex == index)
-                    Random.Range(0, StarObjs.Length);
+                {
+                    if (index == 0)
+                        index++;
+                    else
+                        index--;
+                    //                    Random.Range(0, StarObjs.Length);
+                }
 
                 lastIndex = index;
                 Instantiate(StarObjs[lastIndex], transform.position, Quaternion.identity);

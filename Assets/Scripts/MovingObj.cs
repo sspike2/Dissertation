@@ -12,6 +12,8 @@ public class MovingObj : MonoBehaviour
 
     bool isMagnet;
 
+    GameObject disabledObj = null;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -23,13 +25,32 @@ public class MovingObj : MonoBehaviour
 
     }
 
+    public void SetDisabledObj(GameObject obj)
+    {
+        disabledObj = obj;
+    }
+
 
     // Update is called once per frame
     void Update()
     {
+        if (!gameObject.activeSelf) return;
+
+
         // if (!isMagnet)
         // {
         transform.position += new Vector3(0, 0, spawner.obstacleSpeed) * Time.fixedDeltaTime;
+
+        if (transform.position.z >= 500)
+        {
+            if (disabledObj != null)
+            {
+                disabledObj.SetActive(true);
+                disabledObj = null;
+            }
+            transform.position = Vector3.zero;
+            gameObject.SetActive(false);
+        }
         // }
         // else
         // {          

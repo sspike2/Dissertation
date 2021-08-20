@@ -3,17 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
 
     public GameObject options;
 
+    AudioSource BGMaudio;
 
+    public Slider BGMSlider, SFXSlider;
 
     // Start is called before the first frame update
     void Start()
     {
+        BGMaudio = FindObjectOfType<AudioSource>();
+        var bgm = PlayerPrefs.GetFloat("BGMVol");
+        BGMaudio.volume = bgm;
+        BGMSlider.value = bgm;
+
+        var sfx = PlayerPrefs.GetFloat("SFXVol");
+        SFXSlider.value = sfx;
+
 
     }
 
@@ -48,13 +59,14 @@ public class MainMenu : MonoBehaviour
 
     public void SoundChange(float val)
     {
-
+        PlayerPrefs.SetFloat("SFXVol", val);
     }
 
 
     public void MusicChange(float val)
     {
-
+        BGMaudio.volume = val;
+        PlayerPrefs.SetFloat("BGMVol", val);
     }
     public void Quit()
     {

@@ -5,7 +5,7 @@ using DG.Tweening;
 
 public class GameManager : MonoBehaviour
 {
-
+    CameraScript cameraScript;
     public static GameManager instance;
     [SerializeField] Spawner riverMiniGameObj;
 
@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
     public float timePlayed;
 
     Vector3 playerPos;
+    Quaternion playerRot;
 
     [ColorUsage(true, true)]
     [SerializeField]
@@ -31,18 +32,20 @@ public class GameManager : MonoBehaviour
 
     int pollutionLevel = 2;
 
-    bool completedRiverMinigame = false, completedPipeGame = false;
+    public bool completedRiverMinigame = false, completedPipeGame = false;
 
     private void Awake()
     {
         instance = this;
         player = FindObjectOfType<PlayerClass>();
+
         // StartRiverMiniGame();
     }
     // Start is called before the first frame update
     void Start()
     {
-
+        cameraScript = FindObjectOfType<CameraScript>();
+        material.SetColor("_BaseColor", Polluted);
     }
     bool col;
     // Update is called once per frame
@@ -68,9 +71,9 @@ public class GameManager : MonoBehaviour
         pollutionLevel--;
 
         if (pollutionLevel == 1)
-            material.DOColor(semiPolluted, "_BaseColor", 1f);
+            material.DOColor(semiPolluted, "_BaseColor", 3f);
         else
-            material.DOColor(nonPolluted, "_BaseColor", 1f);
+            material.DOColor(nonPolluted, "_BaseColor", 3f);
 
     }
 
@@ -90,6 +93,7 @@ public class GameManager : MonoBehaviour
         riverMiniGameObj.SetSpawning(false);
         player.currentState = PlayerState.freeRoam;
         riverCam.SetActive(false);
+        // UIScript
         if (!completedRiverMinigame)
         {
             completedRiverMinigame = true;
@@ -100,12 +104,24 @@ public class GameManager : MonoBehaviour
     public void StartRiverMiniGame()
     {
         playerPos = player.transform.position;
+        playerRot = player.transform.rotation;
+
         riverMiniGameObj.SetSpawning(true);
+        cameraScript.SetBlendTime(0);
         riverCam.SetActive(true);
+
         player.transform.position = playerRiverPos.position;
+        player.transform.rotation = Quaternion.Euler(0, 180, 0);
         player.currentState = PlayerState.riverMiniGame;
         timePlayed = 0f;
         isPlayingMiniGame = true;
+
+        StartCoroutine(ResetCamTime());
+        IEnumerator ResetCamTime()
+        {
+            yield return new WaitForSeconds(.1f);
+            cameraScript.SetBlendTime(2);
+        }
     }
 
 

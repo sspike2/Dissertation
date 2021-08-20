@@ -14,9 +14,29 @@ public class AudioManager : MonoBehaviour
     private void Awake()
     {
         instance = this;
+
+    }
+    private void Start()
+    {
+        var bmg = PlayerPrefs.GetFloat("BGMVol");
+        var sfx = PlayerPrefs.GetFloat("SFXVol");
+
+        UIScript.Instance.ToggleMusic(bmg);
+        UIScript.Instance.ToggleSound(sfx);
+
     }
 
+    public void MusicVolume(float val)
+    {
+        BGMSource.volume = val;
+        PlayerPrefs.SetFloat("BGMVol", val);
+    }
 
+    public void SoundVolume(float val)
+    {
+        SFXSource.volume = val;
+        PlayerPrefs.SetFloat("SFXVol", val);
+    }
 
 
     public void PlayGarbageAudio()
